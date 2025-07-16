@@ -1,0 +1,26 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+' Пользователь
+Person(owners, "Собственники", "Пользуются мобильным приложением для управления жильём")
+
+' Внешние сервисы
+System_Ext(intercomService, "Интеллектуальный домофон", "Партнёрский сервис: биометрический доступ")
+System_Ext(barrierService, "Интеллектуальный шлагбаум", "Партнёрский сервис: распознавание номеров")
+
+' Внутренние системы PropDevelopment
+System_Boundary(propDev, "PropDevelopment") {
+    System(mobileApp, "Мобильное приложение", "Управление функциями Умного дома")
+    System(domophoneBackend, "Domophone Integration Service", "Бэкенд-сервис для интеграции с домофоном")
+    System(barrierBackend, "Barrier Integration Service", "Бэкенд-сервис для интеграции с шлагбаумом")
+}
+
+' Взаимодействие
+Rel(owners, mobileApp, "Используют")
+Rel(mobileApp, domophoneBackend, "Вызывает API")
+Rel(mobileApp, barrierBackend, "Вызывает API")
+
+Rel(domophoneBackend, intercomService, "Интеграция", "HTTPS/REST")
+Rel(barrierBackend, barrierService, "Интеграция", "HTTPS/REST")
+
+@enduml

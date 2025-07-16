@@ -1,0 +1,46 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+
+System_Boundary(propDev, "PropDevelopment") {
+
+  Container(mobileApp, "Мобильное приложение", "Flutter/Android/iOS", "Позволяет собственникам управлять устройствами Умного дома")
+
+  Container(intercomService, "Domophone Integration Service", "Java + Spring Boot", "Интеграция с интеллектуальным домофоном")
+  ContainerDb(intercomDb, "domophone-db", "PostgreSQL", "События открытия, биометрия, журналы")
+
+  Container(barrierService, "Barrier Integration Service", "Java + Spring Boot", "Интеграция с интеллектуальным шлагбаумом")
+  ContainerDb(barrierDb, "barrier-db", "PostgreSQL", "Номера авто, логи доступа")
+
+  Container(authService, "Auth Service", "Spring Security", "Обработка регистрации и аутентификации")
+  ContainerDb(authDb, "auth-db", "PostgreSQL", "Учетные данные пользователей")
+
+  ' Прокси расположен логически ниже — для внешних вызовов
+  Container(proxyGateway, "Proxy Gateway", "NGINX / Spring Cloud Gateway", "Прокси для безопасного вызова внешних API")
+
+}
+
+System_Ext(externalIntercom, "Интеллектуальный домофон (партнёр)")
+System_Ext(externalBarrier, "Интеллектуальный шлагбаум (партнёр)")
+
+' Взаимодействия мобильного приложения
+Rel(mobileApp, authService, "Регистрация / Аутентификация", "HTTPS/JSON")
+Rel(mobileApp, intercomService, "Управление / статус", "HTTPS/JSON")
+Rel(mobileApp, barrierService, "Управление / статус", "HTTPS/JSON")
+
+' Хранение данных
+Rel(intercomService, intercomDb, "Чтение / Запись")
+Rel(barrierService, barrierDb, "Чтение / Запись")
+Rel(authService, authDb, "Чтение / Запись")
+
+' Вызовы через прокси
+Rel(intercomService, proxyGateway, "REST-запрос", "HTTPS")
+Rel(barrierService, proxyGateway, "REST-запрос", "HTTPS")
+
+' Внешние вызовы от прокси
+Rel(proxyGateway, externalIntercom, "REST API", "HTTPS")
+Rel(proxyGateway, externalBarrier, "REST API", "HTTPS")
+
+@enduml
